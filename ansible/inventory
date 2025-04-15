@@ -1,2 +1,2 @@
 [web]
-ec2_instance ansible_host=YOUR_IP ansible_user=ec2-user
+ec2_instance ansible_host=YOUR_IP ansible_user=ubuntu
