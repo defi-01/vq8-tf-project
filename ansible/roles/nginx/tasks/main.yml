@@ -1,10 +1,4 @@
 ---
-- name: Stop unattended-upgrades
-  ansible.builtin.systemd:
-    name: unattended-upgrades
-    state: stopped
-  ignore_errors: yes
-
 - name: Wait for ALL apt/dpkg locks
   ansible.builtin.shell: |
     while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
