@@ -16,3 +16,4 @@ runcmd:
   - usermod -aG docker ubuntu
   - systemctl enable docker
   - systemctl start docker
+  - while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 2; done
