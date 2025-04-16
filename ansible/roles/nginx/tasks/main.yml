@@ -1,6 +1,5 @@
 ---
 - name: Setup Nginx and CloudWatch
-  hosts: web
   become: true
   tasks:
     - name: Stop unattended-upgrades (temporary)
