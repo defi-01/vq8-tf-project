@@ -1,5 +1,5 @@
 - name: Install Nginx
-  yum:
+  apt:
     name: nginx
     state: present
 
@@ -12,10 +12,11 @@
 - name: Copy index.html with IP address
   template:
     src: index.html.j2
-    dest: /usr/share/nginx/html/index.html
+    dest: /var/www/html/index.html
 
 - name: Install CloudWatch Agent
   shell: |
-    sudo yum install -y amazon-cloudwatch-agent
+    curl -O https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+    sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
     sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
       -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
