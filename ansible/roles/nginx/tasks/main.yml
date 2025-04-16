@@ -1,12 +1,14 @@
 ---
-- name: Wait for apt lock to be released
+- name: Wait for ALL apt/dpkg locks before Nginx installation
   ansible.builtin.shell: |
-    while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
-      echo "Waiting for apt lock to be released..."
-      sleep 5
+    while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || 
+          sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || 
+          sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+      echo "Waiting for package manager locks to be released..."
+      sleep 2  # Уменьшите интервал до 2 секунд
     done
   changed_when: false
-  timeout: 300
+  timeout: 300 
 
 - name: Install Nginx
   ansible.builtin.apt:
