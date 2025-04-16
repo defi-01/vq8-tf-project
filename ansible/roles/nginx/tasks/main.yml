@@ -30,7 +30,17 @@
     url: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
     dest: /tmp/amazon-cloudwatch-agent.deb
 
+- name: Wait for all apt/dpkg locks before CloudWatch installation
+  ansible.builtin.shell: |
+    while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+      echo "Waiting for package manager locks to be released..."
+      sleep 5
+    done
+  changed_when: false
+  timeout: 300
+
 - name: Install CloudWatch Agent DEB
   apt:
     deb: /tmp/amazon-cloudwatch-agent.deb
     state: present
+    force: yes
