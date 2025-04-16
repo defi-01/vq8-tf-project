@@ -1,6 +1,6 @@
 <html>
   <head><title>Your IP</title></head>
   <body>
-    <h1>Your IP is {{ ansible_host }}</h1>
+    <h1>Your IP is {{ ansible_default_ipv4.address }}</h1>
   </body>
 </html>
