@@ -5,7 +5,7 @@
           sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || 
           sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
       echo "Waiting for package manager locks to be released..."
-      sleep 2  # Уменьшите интервал до 2 секунд
+      sleep 2
     done
   changed_when: false
   timeout: 300 
