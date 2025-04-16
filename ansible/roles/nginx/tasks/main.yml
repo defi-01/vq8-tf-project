@@ -3,7 +3,7 @@
   ansible.builtin.shell: |
     while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
       echo "Waiting for package manager locks..."
-      sleep 1
+      sleep 10
     done
   changed_when: false
   timeout: 300
