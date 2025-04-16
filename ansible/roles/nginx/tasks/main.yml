@@ -1,12 +1,18 @@
 ---
-- name: Wait for ALL apt/dpkg locks
+
+- name: Wait for APT/DPKG locks (initial)
   ansible.builtin.shell: |
-    while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+    while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || \
+          sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || \
+          sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
       echo "Waiting for package manager locks..."
-      sleep 10
+      sleep 5
     done
   changed_when: false
-  timeout: 300
+  register: apt_wait_result
+  retries: 10
+  delay: 10
+  until: apt_wait_result.rc == 0
 
 - name: Install Nginx
   ansible.builtin.apt:
@@ -15,7 +21,11 @@
     update_cache: yes
     lock_timeout: 300
 
-- name: Start and enable Nginx
+- name: Pause to avoid dpkg conflicts
+  ansible.builtin.pause:
+    seconds: 10
+
+- name: Ensure Nginx is started and enabled
   ansible.builtin.systemd:
     name: nginx
     enabled: yes
@@ -26,25 +36,36 @@
     src: index.html.j2
     dest: /var/www/html/index.html
 
-- name: Download CloudWatch Agent
-  get_url:
+- name: Download CloudWatch Agent DEB
+  ansible.builtin.get_url:
     url: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
     dest: /tmp/amazon-cloudwatch-agent.deb
+    mode: '0644'
+
+- name: Wait before installing CloudWatch Agent
+  ansible.builtin.pause:
+    seconds: 10
 
 - name: Install CloudWatch Agent DEB
-  ansible.builtin.apt:
-    deb: /tmp/amazon-cloudwatch-agent.deb
-    state: present
-    force: yes
-    lock_timeout: 300
+  ansible.builtin.shell: |
+    dpkg -i /tmp/amazon-cloudwatch-agent.deb
+  register: cw_install_result
+  retries: 5
+  delay: 15
+  until: cw_install_result.rc == 0
+  changed_when: "'installed' in cw_install_result.stdout or 'setting up' in cw_install_result.stdout"
 
 - name: Upload CloudWatch config
-  copy:
+  ansible.builtin.copy:
     src: cloudwatch-config.json
     dest: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+    mode: '0644'
 
 - name: Start CloudWatch Agent
-  shell: |
+  ansible.builtin.shell: |
     /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-    -a fetch-config -m ec2 \
-    -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+      -a fetch-config -m ec2 \
+      -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
+      -s
+  register: cw_start
+  changed_when: "'successfully' in cw_start.stdout"
