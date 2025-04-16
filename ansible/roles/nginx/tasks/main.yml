@@ -3,6 +3,7 @@
   ansible.builtin.systemd:
     name: unattended-upgrades
     state: stopped
+  ignore_errors: yes
 
 - name: Wait for ALL apt/dpkg locks
   ansible.builtin.shell: |
