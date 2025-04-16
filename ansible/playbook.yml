@@ -5,9 +5,10 @@
 
   tasks:
     - name: Install Nginx
-      yum:
+      apt:
         name: nginx
         state: present
+        update_cache: yes
 
     - name: Enable and start Nginx
       systemd:
@@ -17,21 +18,20 @@
 
     - name: Create index.html with client IP
       copy:
-        dest: /usr/share/nginx/html/index.html
+        dest: /var/www/html/index.html
         content: "Your IP is: {{ ansible_host }}"
 
-    - name: Install CloudWatch Agent
-      amazon.aws.aws_s3:
-        bucket: amazoncloudwatch-agent
-        object: amazon-cloudwatch-agent.rpm
-        dest: /tmp/amazon-cloudwatch-agent.rpm
-        mode: get
-      when: ansible_facts['os_family'] == "RedHat"
+    - name: Download CloudWatch Agent
+      get_url:
+        url: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+        dest: /tmp/amazon-cloudwatch-agent.deb
+      when: ansible_facts['os_family'] == "Debian"
 
-    - name: Install RPM
-      yum:
-        name: /tmp/amazon-cloudwatch-agent.rpm
+    - name: Install CloudWatch Agent DEB
+      apt:
+        deb: /tmp/amazon-cloudwatch-agent.deb
         state: present
+      when: ansible_facts['os_family'] == "Debian"
 
     - name: Upload CloudWatch config
       copy:
