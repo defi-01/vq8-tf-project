@@ -1,35 +1,36 @@
+---
 - name: Wait for apt lock to be released
   ansible.builtin.shell: |
     while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
       echo "Waiting for apt lock to be released..."
-      sleep 2
+      sleep 5
     done
-  become: yes
+  changed_when: false
+  timeout: 300
 
 - name: Install Nginx
   ansible.builtin.apt:
     name: nginx
     state: present
     update_cache: yes
-  become: yes
 
 - name: Start and enable Nginx
   ansible.builtin.systemd:
     name: nginx
     enabled: yes
     state: started
-  become: yes
 
 - name: Copy index.html with IP address
   ansible.builtin.template:
     src: index.html.j2
     dest: /var/www/html/index.html
-  become: yes
 
-- name: Install CloudWatch Agent
-  ansible.builtin.shell: |
-    curl -O https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
-    sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
-    sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
-      -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
-  become: yes
+- name: Download CloudWatch Agent
+  get_url:
+    url: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+    dest: /tmp/amazon-cloudwatch-agent.deb
+
+- name: Install CloudWatch Agent DEB
+  apt:
+    deb: /tmp/amazon-cloudwatch-agent.deb
+    state: present
