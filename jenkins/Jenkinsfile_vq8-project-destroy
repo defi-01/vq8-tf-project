@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        terraform 'terraform'
+    }
+
     parameters {
         choice(
             name: 'CONFIRM DESTROY',
@@ -9,26 +13,23 @@ pipeline {
         )
     }
 
-    tools {
-        terraform 'terraform'
-    }
-
     environment {
         GITHUB_TOKEN = credentials('vq8-GitHub')
     }
 
     stages {
-        stage('Confirmation Check') {
+
+        stage('Apply Confirmation Check') {
             steps {
                 script {
                     if (params["CONFIRM DESTROY"] != 'YES') {
-                        error 'Destruction Not Confirmed!'
+                        error '❌ Apply Not Confirmed!❌'
                     }
                 }
             }
         }
 
-        stage('Cloning Repository') {
+        stage('Cloning vq8-project Repository') {
             steps {
                 script {
                     sh 'rm -rf vq8-project'
@@ -40,16 +41,14 @@ pipeline {
         stage('Terraform Destroy Provisioning') {
             steps {
                 dir('vq8-project/tf') {
-                    withCredentials([
+                    withCredentials([[
                         $class: 'AmazonWebServicesCredentialsBinding',
                         credentialsId: 'vq8-aws',
                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]) {
-                        script {
-                            sh 'terraform init'
-                            sh 'terraform destroy -auto-approve'
-                        }
+                    ]]) {
+                        sh 'terraform init'
+                        sh 'terraform destroy -auto-approve'
                     }
                 }
             }
@@ -59,6 +58,7 @@ pipeline {
             steps {
                 script {
                     def timestamp = sh(script: "date '+%Y-%m-%d %H:%M:%S'", returnStdout: true).trim()
+                    
                     def output = """
 ========================================
         💥 TERRAFORM DESTROY RESULTS 💥
