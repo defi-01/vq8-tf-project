@@ -1,9 +1,9 @@
 <html>
   <head>
-    <title>Your IP Info</title>
+    <title>vq8-[Final Project]</title>
     <style>
       body {
-        background: linear-gradient(135deg, #1f1c2c, #928dab);
+        background: linear-gradient(135deg, #88BDBC, #254E58);
         color: #fff;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         display: flex;
@@ -17,27 +17,38 @@
       h1 {
         font-size: 3em;
         margin-bottom: 20px;
-        background: linear-gradient(45deg, #00c6ff, #0072ff);
+        background: linear-gradient(45deg, #112D32, #4F4A41);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        padding: 10px 20px;
+        border-radius: 10px;
       }
       .ip-box {
         background: rgba(255, 255, 255, 0.1);
-        padding: 20px 30px;
-        border-radius: 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        font-size: 1.5em;
+        padding: 30px;
+        border-radius: 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        font-size: 1.4em;
+        transition: transform 0.3s ease-in-out;
+      }
+      .ip-box:hover {
+        transform: scale(1.05);
       }
       .label {
         font-weight: bold;
-        color: #ffd700;
+        color: #6E6658;
+      }
+      #client-ip {
+        font-weight: bold;
+        color: #FFD700;
       }
     </style>
   </head>
   <body>
-    <h1>IP Info Center</h1>
+    <h1>vq8-[Final Project]</h1>
     <div class="ip-box">
-      <p><span class="label">Server IP:</span> {{ ansible_default_ipv4.address }}</p>
+      <p><span class="label">Public IPv4 address:</span> {{ ansible_default_ipv4.address }}</p>
+      <p><span class="label">Private IPv4 addresses:</span> {{ ansible_all_ipv4_addresses }}</p>
       <p><span class="label">Your IP:</span> <span id="client-ip">Loading...</span></p>
     </div>
 
