@@ -64,7 +64,7 @@ pipeline {
         💥 TERRAFORM DESTROY RESULTS 💥
 ========================================
 ✅ Infrastructure destruction completed successfully!
-✅ Environment: ${env.JOB_NAME}
+✅ JOB: ${env.JOB_NAME}
 ✅ Timestamp: ${timestamp}
 ========================================
              🎉 COMPLETE 🎉
