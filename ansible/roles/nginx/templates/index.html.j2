@@ -38,7 +38,7 @@
         font-weight: bold;
         color: #6E6658;
       }
-      #client-ip {
+      .ip-value {
         font-weight: bold;
         color: #FFD700;
       }
@@ -47,9 +47,9 @@
   <body>
     <h1>vq8-[Final Project]</h1>
     <div class="ip-box">
-      <p><span class="label">Public IPv4 address:</span> {{ ansible_default_ipv4.address }}</p>
-      <p><span class="label">Private IPv4 addresses:</span> {{ ansible_all_ipv4_addresses }}</p>
-      <p><span class="label">Your IP:</span> <span id="client-ip">Loading...</span></p>
+      <p><span class="label">Public IPv4 address:</span> <span class="ip-value">{{ ansible_default_ipv4.address }}</span></p>
+      <p><span class="label">Private IPv4 addresses:</span> <span class="ip-value">{{ ansible_all_ipv4_addresses | join(', ') }}</span></p>
+      <p><span class="label">Your IP:</span> <span id="client-ip" class="ip-value">Loading...</span></p>
     </div>
 
     <script>
