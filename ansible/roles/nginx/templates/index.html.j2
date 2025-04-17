@@ -1,5 +1,33 @@
 <html>
-  <head><title>Your IP</title></head>
+  <head>
+    <title>Your IP</title>
+    <style>
+      body {
+        background: linear-gradient(135deg, #1f1c2c, #928dab);
+        color: #fff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        text-align: center;
+      }
+      h1 {
+        font-size: 3em;
+        background: linear-gradient(45deg, #ff6a00, #ee0979);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+    </style>
+  </head>
   <body>
     <h1>Your IP is {{ ansible_default_ipv4.address }}</h1>
   </body>
