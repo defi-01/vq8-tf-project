@@ -1,0 +1,122 @@
+pipeline {
+    agent any
+
+    tools {
+        terraform 'terraform'
+    }
+
+    parameters {
+        choice(
+            name: 'CONFIRM APPLY',
+            choices: ['NO', 'YES'],
+            description: 'Confirm Infrastructure Applying'
+        )
+    }
+
+    environment {
+        GITHUB_TOKEN = credentials('vq8-GitHub')
+    }
+
+    stages {
+        
+        stage('Apply Confirmation Check') {
+            steps {
+                script {
+                    if (params["CONFIRM APPLY"] != 'YES') {
+                        error '❌ Apply Not Confirmed!❌'
+                    }
+                }
+            }
+        }
+        
+        stage('Cloning vq8-project Repository') {
+            steps {
+                script {
+                    sh 'rm -rf vq8-project'
+                    sh 'git clone https://${GITHUB_TOKEN}@github.com/defi-01/vq8-project.git'
+                }
+            }
+        }
+
+        stage('Terraform Provisioning') {
+            steps {
+                dir('vq8-project/tf') {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'vq8-aws',
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ]]) {
+                        sh 'terraform init'
+                        sh 'terraform apply -auto-approve'
+                    }
+                }
+            }
+        }
+
+        stage('Getting EC2_Public_IP Provisioning') {
+            steps {
+                dir('vq8-project/tf') {
+                    withCredentials([[
+                        $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'vq8-aws',
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+                    ]]) {
+                        script {
+                            env.EC2_PUBLIC_IP = sh(
+                                script: 'terraform output -raw instance_public_ip',
+                                returnStdout: true
+                            ).trim()
+                            echo "EC2 Public IP: ${env.EC2_PUBLIC_IP}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Ansible Provisioning') {
+            steps {
+                sshagent(credentials: ['vq8-key']) {
+                    dir('vq8-project/ansible') {
+                        script {
+                            sh '''
+                                until ssh -v -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@${EC2_PUBLIC_IP} 'echo SSH is up' 2>/dev/null; do
+                                    echo 'Waiting for SSH...'
+                                    sleep 5
+                                done
+                            '''
+                            sh "sed -i 's/YOUR_IP/${env.EC2_PUBLIC_IP}/' inventory"
+                            sh "ansible-playbook -i inventory playbook.yml"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Results Provisioning') {
+            steps {
+                sshagent(credentials: ['vq8-key']) {
+                    script {
+                        def instanceInfo = sh(script: "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_PUBLIC_IP} \"lsb_release -d | cut -f2 | tr -d '\\n'; echo -n ' '; hostname -I | cut -d' ' -f1 | tr -d '\\n'; echo -n ' '; uname -r\"", returnStdout: true).trim()
+                        def dockerVersion = sh(script: "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_PUBLIC_IP} 'docker --version 2>/dev/null || echo Not Installed'", returnStdout: true).trim()
+                        def nginxVersion = sh(script: "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_PUBLIC_IP} 'echo \$(nginx -v 2>&1 || echo Not Installed)'", returnStdout: true).trim()
+
+                        def output = """
+========================================
+        🚀 PROVISIONING RESULTS 🚀
+========================================
+✅🖥️  Instance Info:    ${instanceInfo}
+✅🌐  Public IP:        ${env.EC2_PUBLIC_IP}
+✅🐳  Docker Version:   ${dockerVersion}
+✅🌐  Nginx Version:    ${nginxVersion}
+========================================
+"""
+
+                        echo output
+                    }
+                }
+            }
+        }
+    }
+}
