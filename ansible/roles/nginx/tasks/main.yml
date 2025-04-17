@@ -20,6 +20,10 @@
     state: present
     update_cache: yes
     lock_timeout: 300
+  register: nginx_result
+  retries: 5
+  delay: 10
+  until: nginx_result is succeeded
 
 - name: Pause to avoid dpkg conflicts
   ansible.builtin.pause:
@@ -30,6 +34,10 @@
     name: nginx
     enabled: yes
     state: started
+  register: nginx_systemd
+  retries: 3
+  delay: 5
+  until: nginx_systemd is succeeded
 
 - name: Copy index.html with IP address
   ansible.builtin.template:
@@ -41,6 +49,10 @@
     url: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
     dest: /tmp/amazon-cloudwatch-agent.deb
     mode: '0644'
+  register: deb_download
+  retries: 5
+  delay: 10
+  until: deb_download is succeeded
 
 - name: Wait before installing CloudWatch Agent
   ansible.builtin.pause:
@@ -48,11 +60,16 @@
 
 - name: Install CloudWatch Agent DEB
   ansible.builtin.shell: |
-    dpkg -i /tmp/amazon-cloudwatch-agent.deb
+    while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || \
+          sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do
+      echo "Waiting for dpkg lock..."
+      sleep 5
+    done
+    dpkg -i /tmp/amazon-cloudwatch-agent.deb || true
   register: cw_install_result
   retries: 5
   delay: 15
-  until: cw_install_result.rc == 0
+  until: cw_install_result.rc == 0 or 'already installed' in cw_install_result.stdout
   changed_when: "'installed' in cw_install_result.stdout or 'setting up' in cw_install_result.stdout"
 
 - name: Upload CloudWatch config
@@ -68,4 +85,7 @@
       -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
       -s
   register: cw_start
+  retries: 3
+  delay: 10
+  until: "'successfully' in cw_start.stdout"
   changed_when: "'successfully' in cw_start.stdout"
