@@ -1,6 +1,6 @@
 ---
 
-- name: Wait for APT/DPKG locks (initial)
+- name: Wait for APT/DPKG locks
   ansible.builtin.shell: |
     while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 || \
           sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || \
@@ -78,6 +78,12 @@
     dest: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
     mode: '0644'
 
+- name: Wait for CloudWatch config to exist
+  ansible.builtin.wait_for:
+    path: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+    state: present
+    timeout: 30
+
 - name: Start CloudWatch Agent
   ansible.builtin.shell: |
     /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
@@ -87,5 +93,5 @@
   register: cw_start
   retries: 3
   delay: 10
-  until: "'successfully' in cw_start.stdout"
-  changed_when: "'successfully' in cw_start.stdout"
+  until: cw_start.rc == 0
+  changed_when: "'successfully' in cw_start.stdout or 'Start' in cw_start.stdout"
