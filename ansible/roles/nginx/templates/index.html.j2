@@ -47,8 +47,8 @@
   <body>
     <h1>vq8-[Final Project]</h1>
     <div class="ip-box">
-      <p><span class="label">Public IPv4 address:</span> <span class="ip-value">{{ ansible_default_ipv4.address }}</span></p>
-      <p><span class="label">Private IPv4 addresses:</span> <span class="ip-value">{{ ansible_all_ipv4_addresses | join(', ') }}</span></p>
+      <p><span class="label">Public IPv4 address:</span> <span class="ip-value">{{ ansible_ec2_public_ipv4 }}</span></p>
+      <p><span class="label">Private IPv4 address:</span> <span class="ip-value">{{ ansible_default_ipv4.address }}</span></p>
       <p><span class="label">Your IP:</span> <span id="client-ip" class="ip-value">Loading...</span></p>
     </div>
 
