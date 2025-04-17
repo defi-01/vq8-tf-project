@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>Your IP</title>
+    <title>Your IP Info</title>
     <style>
       body {
         background: linear-gradient(135deg, #1f1c2c, #928dab);
@@ -16,19 +16,40 @@
       }
       h1 {
         font-size: 3em;
-        background: linear-gradient(45deg, #ff6a00, #ee0979);
+        margin-bottom: 20px;
+        background: linear-gradient(45deg, #00c6ff, #0072ff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: pulse 2s infinite;
       }
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
+      .ip-box {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px 30px;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        font-size: 1.5em;
+      }
+      .label {
+        font-weight: bold;
+        color: #ffd700;
       }
     </style>
   </head>
   <body>
-    <h1>Your IP is {{ ansible_default_ipv4.address }}</h1>
+    <h1>IP Info Center</h1>
+    <div class="ip-box">
+      <p><span class="label">Server IP:</span> {{ ansible_default_ipv4.address }}</p>
+      <p><span class="label">Your IP:</span> <span id="client-ip">Loading...</span></p>
+    </div>
+
+    <script>
+      fetch('https://api.ipify.org?format=json')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('client-ip').textContent = data.ip;
+        })
+        .catch(() => {
+          document.getElementById('client-ip').textContent = "Unable to fetch IP";
+        });
+    </script>
   </body>
 </html>
