@@ -1,4 +1,4 @@
-# 🚀 [Jenkins + Terraform + Ansible Infra Deployment] 🚀
+# 🚀 [Jenkins + Terraform + Ansible AWS Infra Deployment] 🚀
 ![AWS](https://img.shields.io/badge/AWS-Deployed-orange?logo=amazon-aws&logoColor=white&style=for-the-badge)
 ## ☁️ vq8-project ☁️
 
