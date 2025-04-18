@@ -1,9 +1,10 @@
 # 🚀 [Jenkins + Terraform + Ansible Infra Deployment] 🚀
-## vq8-project 
+![AWS](https://img.shields.io/badge/AWS-Deployed-orange?logo=amazon-aws&logoColor=white&style=for-the-badge)
+## ☁️ vq8-project ☁️
 
-#### This project automates infrastructure deployment using Jenkins, Terraform, and Ansible. The entire process is fully automated from infrastructure creation to configuration, requiring no manual steps. Jenkins acts as the central orchestrator, running a CI/CD pipeline that:
+#### This project automates infrastructure deployment using Jenkins, Terraform, and Ansible. The entire process is fully automated from infrastructure creation to configuration, requiring no manual steps. All infrastructure is deployed on AWS. Jenkins acts as the central orchestrator, running a CI/CD pipeline that:
 
-- 🏗️ Provisions an EC2 instance with Terraform
+- 🏗️ Provisions an EC2 instance on AWS with Terraform
 
 - 🐳 Installs Docker via user data
 
