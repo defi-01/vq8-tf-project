@@ -4,7 +4,7 @@
 
 #### This project automates infrastructure deployment using Jenkins, Terraform, and Ansible. The entire process is fully automated from infrastructure creation to configuration, requiring no manual steps. All infrastructure is deployed on AWS. Jenkins acts as the central orchestrator, running a CI/CD pipeline that:
 
-- 🏗️ Provisions an EC2 instance on AWS with Terraform
+- 🏗️ Provision an EC2 instance on AWS with Terraform
 
 - 🐳 Installs Docker via user data
 
