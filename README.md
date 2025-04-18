@@ -14,4 +14,4 @@
 
 ![visual diagram](https://github.com/user-attachments/assets/3e55f321-442c-433f-8892-15a977b11553)
 
-- ⚙️ Ansible must be installed on the Jenkins host, as it is used to configure the EC2 instance during the pipeline execution.
+⚙️ Ansible must be installed on the Jenkins host, as it is used to configure the EC2 instance during the pipeline execution.
