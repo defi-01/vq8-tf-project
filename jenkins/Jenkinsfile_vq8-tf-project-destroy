@@ -29,18 +29,18 @@ pipeline {
             }
         }
 
-        stage('Cloning vq8-project Repository') {
+        stage('Cloning vq8-tf-project Repository') {
             steps {
                 script {
-                    sh 'rm -rf vq8-project'
-                    sh 'git clone https://${GITHUB_TOKEN}@github.com/defi-01/vq8-project.git'
+                    sh 'rm -rf vq8-tf-project'
+                    sh 'git clone https://${GITHUB_TOKEN}@github.com/defi-01/vq8-tf-project.git'
                 }
             }
         }
 
         stage('Terraform Destroy Provisioning') {
             steps {
-                dir('vq8-project/tf') {
+                dir('vq8-tf-project/tf') {
                     withCredentials([[
                         $class: 'AmazonWebServicesCredentialsBinding',
                         credentialsId: 'vq8-aws',
@@ -79,7 +79,7 @@ pipeline {
     post {
         always {
             script {
-                sh 'rm -rf vq8-project'
+                sh 'rm -rf vq8-tf-project'
                 cleanWs()
             }
         }
