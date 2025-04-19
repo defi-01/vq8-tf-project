@@ -1,4 +1,5 @@
 ---
+
 - name: Setup Nginx and CloudWatch
   hosts: web
   become: true
